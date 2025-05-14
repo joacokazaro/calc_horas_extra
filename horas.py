@@ -3,7 +3,7 @@ from tkinter import PhotoImage, ttk, messagebox
 from datetime import date
 import calendar
 from PIL import Image, ImageTk
-
+from tkinter import Toplevel
 # Feriados nacionales de Argentina en 2025
 FERIADOS_COLES_2025 = [
     date(2025, 1, 1), date(2025, 3, 3), date(2025, 3, 4), date(2025, 3, 24),
@@ -29,6 +29,62 @@ MESES = [
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
 ]
 
+def mostrar_resultado_personalizado(horas_realizadas, horas_teoricas):
+    diferencia = horas_realizadas - horas_teoricas
+
+    if diferencia > 0:
+        mensaje_final = "✅ ¡Has realizado horas extra!\n💪 ¡Buen trabajo!"
+        color = "#2A9D8F"
+    elif diferencia < 0:
+        mensaje_final = "⚠️ Te faltan horas por cumplir.\n⏳ Revisa tu jornada."
+        color = "#E76F51"
+    else:
+        mensaje_final = "🎯 Has cumplido exactamente tu horario.\n✔️ ¡Perfecto!"
+        color = "#264653"
+
+    # Crear ventana emergente
+    popup = Toplevel()
+    popup.title("Resultado del cálculo")
+    popup.configure(bg="white")
+    popup.resizable(False, False)
+    popup.attributes('-topmost', True)  # Siempre visible
+
+    # Centrar ventana
+    ancho_ventana = 370
+    alto_ventana = 260
+    pantalla_ancho = popup.winfo_screenwidth()
+    pantalla_alto = popup.winfo_screenheight()
+    x = int((pantalla_ancho / 2) - (ancho_ventana / 2))
+    y = int((pantalla_alto / 2) - (alto_ventana / 2))
+    popup.geometry(f"{ancho_ventana}x{alto_ventana}+{x}+{y}")
+
+    # Encabezado de color
+    marco = tk.Frame(popup, bg=color, height=8)
+    marco.pack(fill="x", side="top")
+
+    # Título
+    tk.Label(popup, text="Resumen del mes", font=("Segoe UI", 14, "bold"),
+             fg=color, bg="white", pady=12).pack()
+
+    # Datos
+    info = (
+        f"🕓 Horas realizadas:  {horas_realizadas:.2f} h\n"
+        f"📘 Horas teóricas:    {horas_teoricas:.2f} h\n"
+        f"📊 Diferencia:         {diferencia:+.2f} h"
+    )
+
+    tk.Label(popup, text=info, font=("Segoe UI", 11),
+             bg="white", justify="left", padx=20).pack()
+
+    # Mensaje final
+    tk.Label(popup, text=mensaje_final, font=("Segoe UI", 12, "bold"),
+             fg=color, bg="white", pady=12).pack()
+
+    # Botón cerrar
+    tk.Button(popup, text="Cerrar", command=popup.destroy,
+              bg=color, fg="white", font=("Segoe UI", 10),
+              activebackground="#21867a", relief="flat", padx=10, pady=5).pack(pady=5)
+
 def obtener_dias_laborales(servicio, año, mes):
     dias_laborales = []
     cal = calendar.Calendar()
@@ -37,13 +93,13 @@ def obtener_dias_laborales(servicio, año, mes):
             continue
         if servicio in ["Supermercado", "Hospital", "Cuadrilla CA Cristina", "Predio Nuccetelli", "Cuadrilla CA Diana", "Cuadrilla CA Gustavo"] and dia not in FERIADOS_SUPER_2025:
             dias_laborales.append(dia)
-        elif servicio in ["Colegio", "Cuadrilla CA Dani F", "Cuadrilla EV Dani F", "Cuadrilla CA Felipe", "Cuadrilla CA Ricardo"]:
+        elif servicio in ["Colegio", "Cuadrilla CA Dani F", "Cuadrilla EV Dani F", "Cuadrilla CA Felipe", "Cuadrilla CA Ricardo", "Puerto del águila"]:
             if dia.weekday() < 5 and dia not in FERIADOS_COLES_2025:
                 dias_laborales.append(dia)
         elif servicio in ["Lunes a Sábado", "Cuadrilla CA Natalia"]:
-            if dia.weekday() < 6 and dia not in FERIADOS_SUPER_2025:
+            if dia.weekday() < 6 and dia not in FERIADOS_COLES_2025:
                 dias_laborales.append(dia)
-        elif servicio in ["Cuadrilla EV Diana"]:
+        elif servicio in ["Cuadrilla EV Diana", "FADEA"]:
              if dia.weekday() < 5 and dia not in FERIADOS_SUPER_2025:
                 dias_laborales.append(dia)
     return dias_laborales
@@ -83,18 +139,11 @@ def calcular():
         else:
             horas_diarias = jornada_semanal / 5  # Suponiendo 5 días por semana
         horas_teoricas = dias_laborales_teoricos * horas_diarias
-        diferencia = horas_trabajadas - horas_teoricas
+        
+        
 
-        resultado = f"Horas teóricas: {horas_teoricas:.2f}\n"
-        resultado += f"Diferencia: {diferencia:.2f} horas\n"
-        if diferencia > 0:
-            resultado += "→ Horas extra realizadas."
-        elif diferencia < 0:
-            resultado += "→ Horas faltantes."
-        else:
-            resultado += "→ Horas exactas."
+        mostrar_resultado_personalizado(horas_trabajadas, horas_teoricas)
 
-        messagebox.showinfo("Resultado", resultado)
 
     except ValueError:
         messagebox.showerror("Error", "Por favor, ingrese valores válidos.")
@@ -155,7 +204,9 @@ combo_servicio = ttk.Combobox(frame, values=
                                 "Cuadrilla CA Diana",
                                 "Cuadrilla EV Diana",
                                 "Cuadrilla CA Natalia",
-                                "Cuadrilla CA Gustavo"]#Listado de tipos de servicio
+                                "Cuadrilla CA Gustavo",
+                                "Puerto del águila",
+                                "FADEA"]#Listado de servicios
                               , state="readonly", font=FONT_BOLD)
 combo_servicio.current(0)
 combo_servicio.grid(row=1, column=1)
@@ -183,9 +234,6 @@ label_francos.grid_remove()
 
 btn_calcular = tk.Button(frame, text="Calcular", command=calcular, bg=BTN_COLOR, fg="white", font=FONT, relief="flat", width=20)
 btn_calcular.grid(row=6, column=0, columnspan=2, pady=15)
-
-#TITULO
-#tk.Label(frame, text="KAZARÓ - Calculadora de Horas Extra", bg=BG_COLOR, font=FONT_BOLD).grid(row=8, column=0, sticky="w", pady=10)
 
 icono = PhotoImage(file="KZRO.png")
 root.iconphoto(True, icono)
