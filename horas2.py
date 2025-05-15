@@ -6,6 +6,8 @@ from tkcalendar import DateEntry
 from PIL import Image, ImageTk
 from tkinter import Toplevel
 from datetime import date, timedelta
+from tkinter import font  # Para usar una fuente personalizada
+
 
 
 #Inicializo novedades y ausencias
@@ -28,7 +30,6 @@ def abrir_calendario_ausencias():
                 nuevas_fechas.append(actual)
             actual += timedelta(days=1)
 
-        # Mostrar en la lista
         nuevas_fechas.sort()
         for f in nuevas_fechas:
             lista_fechas.insert(tk.END, f.strftime("%d/%m/%Y"))
@@ -44,34 +45,59 @@ def abrir_calendario_ausencias():
 
     ventana = Toplevel(root)
     ventana.title("Seleccionar fechas de ausencias")
-    ventana.resizable(False, False)
-    ventana.geometry("330x420")
     ventana.configure(bg="white")
+    ventana.resizable(False, False)
 
-    tk.Label(ventana, text="Seleccionar rango de fechas", font=FONT_BOLD, bg="white").pack(pady=10)
+
+
+
+    # Centrado
+    ancho_ventana = 370
+    alto_ventana = 420
+    pantalla_ancho = ventana.winfo_screenwidth()
+    pantalla_alto = ventana.winfo_screenheight()
+    x = int((pantalla_ancho / 2) - (ancho_ventana / 2))
+    y = int((pantalla_alto / 2) - (alto_ventana / 2))
+    ventana.geometry(f"{ancho_ventana}x{alto_ventana}+{x}+{y}")
+
+    tk.Frame(ventana, bg=BTN_COLOR, height=8).pack(fill="x", side="top")
+    tk.Label(ventana, text="Seleccionar rango de fechas", font=TITLE_FONT, bg="white", fg=BTN_COLOR, pady=10).pack()
 
     frame_rango = tk.Frame(ventana, bg="white")
     frame_rango.pack(pady=5)
 
-    tk.Label(frame_rango, text="Desde:", bg="white", font=FONT).grid(row=0, column=0, padx=5)
-    date_desde = DateEntry(frame_rango, width=12, background="darkblue", foreground="white", borderwidth=2, font=FONT)
-    date_desde.grid(row=0, column=1, padx=5)
+    # Calendario DESDE
+    date_desde = DateEntry(frame_rango, width=12, style="my.DateEntry", font=FONT,
+                       background="#2197e6", foreground="white", borderwidth=2,
+                       headersbackground="#2197e6", headersforeground="white",
+                       selectbackground="#2A9D8F", selectforeground="white")
+    date_desde.pack(side="left", padx=5)
 
-    tk.Label(frame_rango, text="Hasta:", bg="white", font=FONT).grid(row=1, column=0, padx=5, pady=5)
-    date_hasta = DateEntry(frame_rango, width=12, background="darkblue", foreground="white", borderwidth=2, font=FONT)
-    date_hasta.grid(row=1, column=1, padx=5, pady=5)
+    # Calendario HASTA
+    date_hasta = DateEntry(frame_rango, width=12, style="my.DateEntry", font=FONT,
+                       background="#2197e6", foreground="white", borderwidth=2,
+                       headersbackground="#2197e6", headersforeground="white",
+                       selectbackground="#2A9D8F", selectforeground="white")
+    date_hasta.pack(side="left", padx=5)
 
-    tk.Button(ventana, text="Agregar rango", command=agregar_rango, bg=BTN_COLOR, fg="white", font=FONT, relief="flat").pack(pady=5)
-    tk.Button(ventana, text="Eliminar seleccionada", command=eliminar_fecha, bg="#e63946", fg="white", font=FONT, relief="flat").pack(pady=5)
+    tk.Button(ventana, text="Agregar rango", command=agregar_rango,
+              bg=BTN_COLOR, fg="white", font=FONT, relief="flat", padx=10, pady=5).pack(pady=5)
+
+    tk.Button(ventana, text="Eliminar seleccionada", command=eliminar_fecha,
+              bg="#e63946", fg="white", font=FONT, relief="flat", padx=10, pady=5).pack(pady=5)
 
     tk.Label(ventana, text="Fechas seleccionadas:", bg="white", font=FONT_BOLD).pack(pady=(10, 0))
-    lista_fechas = tk.Listbox(ventana, font=("Segoe UI", 10), height=10)
-    lista_fechas.pack(pady=5, fill="both", expand=True)
+
+    lista_fechas = tk.Listbox(ventana, font=("Segoe UI", 10), height=10, bd=1, relief="solid")
+    lista_fechas.pack(pady=5, padx=10, fill="both", expand=True)
 
     for f in sorted(ausencias_novedades):
         lista_fechas.insert(tk.END, f.strftime("%d/%m/%Y"))
 
-    tk.Button(ventana, text="Cerrar", command=ventana.destroy, font=FONT).pack(pady=10)
+    tk.Button(ventana, text="Cerrar", command=ventana.destroy,
+              bg=BTN_COLOR, fg="white", font=("Segoe UI", 10),
+              activebackground="#21867a", relief="flat", padx=10, pady=5).pack(pady=10)
+
 
 #Filtrar ausencias validas
 def filtrar_ausencias_validas(servicio, año, mes):
