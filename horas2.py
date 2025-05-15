@@ -2,8 +2,82 @@ import tkinter as tk
 from tkinter import PhotoImage, ttk, messagebox
 from datetime import date
 import calendar
+from tkcalendar import DateEntry
 from PIL import Image, ImageTk
 from tkinter import Toplevel
+from datetime import date, timedelta
+
+
+#Inicializo novedades y ausencias
+ausencias_novedades = []
+
+#Funcion de selección de novedades
+def abrir_calendario_ausencias():
+    def agregar_rango():
+        desde = date_desde.get_date()
+        hasta = date_hasta.get_date()
+        if desde > hasta:
+            messagebox.showwarning("Rango inválido", "La fecha 'desde' no puede ser posterior a 'hasta'.")
+            return
+
+        nuevas_fechas = []
+        actual = desde
+        while actual <= hasta:
+            if actual not in ausencias_novedades:
+                ausencias_novedades.append(actual)
+                nuevas_fechas.append(actual)
+            actual += timedelta(days=1)
+
+        # Mostrar en la lista
+        nuevas_fechas.sort()
+        for f in nuevas_fechas:
+            lista_fechas.insert(tk.END, f.strftime("%d/%m/%Y"))
+
+    def eliminar_fecha():
+        seleccion = lista_fechas.curselection()
+        if seleccion:
+            index = seleccion[0]
+            fecha_texto = lista_fechas.get(index)
+            fecha = date(int(fecha_texto.split("/")[2]), int(fecha_texto.split("/")[1]), int(fecha_texto.split("/")[0]))
+            ausencias_novedades.remove(fecha)
+            lista_fechas.delete(index)
+
+    ventana = Toplevel(root)
+    ventana.title("Seleccionar fechas de ausencias")
+    ventana.resizable(False, False)
+    ventana.geometry("330x420")
+    ventana.configure(bg="white")
+
+    tk.Label(ventana, text="Seleccionar rango de fechas", font=FONT_BOLD, bg="white").pack(pady=10)
+
+    frame_rango = tk.Frame(ventana, bg="white")
+    frame_rango.pack(pady=5)
+
+    tk.Label(frame_rango, text="Desde:", bg="white", font=FONT).grid(row=0, column=0, padx=5)
+    date_desde = DateEntry(frame_rango, width=12, background="darkblue", foreground="white", borderwidth=2, font=FONT)
+    date_desde.grid(row=0, column=1, padx=5)
+
+    tk.Label(frame_rango, text="Hasta:", bg="white", font=FONT).grid(row=1, column=0, padx=5, pady=5)
+    date_hasta = DateEntry(frame_rango, width=12, background="darkblue", foreground="white", borderwidth=2, font=FONT)
+    date_hasta.grid(row=1, column=1, padx=5, pady=5)
+
+    tk.Button(ventana, text="Agregar rango", command=agregar_rango, bg=BTN_COLOR, fg="white", font=FONT, relief="flat").pack(pady=5)
+    tk.Button(ventana, text="Eliminar seleccionada", command=eliminar_fecha, bg="#e63946", fg="white", font=FONT, relief="flat").pack(pady=5)
+
+    tk.Label(ventana, text="Fechas seleccionadas:", bg="white", font=FONT_BOLD).pack(pady=(10, 0))
+    lista_fechas = tk.Listbox(ventana, font=("Segoe UI", 10), height=10)
+    lista_fechas.pack(pady=5, fill="both", expand=True)
+
+    for f in sorted(ausencias_novedades):
+        lista_fechas.insert(tk.END, f.strftime("%d/%m/%Y"))
+
+    tk.Button(ventana, text="Cerrar", command=ventana.destroy, font=FONT).pack(pady=10)
+
+#Filtrar ausencias validas
+def filtrar_ausencias_validas(servicio, año, mes):
+    dias_laborales = obtener_dias_laborales(servicio, año, mes)
+    return [fecha for fecha in ausencias_novedades if fecha in dias_laborales]
+
 
 # Feriados nacionales de Argentina en 2025
 FERIADOS_COLES_2025 = [
@@ -96,10 +170,15 @@ def calcular():
     try:
         horas_trabajadas = float(entry_horas.get())
         jornada_semanal = int(combo_jornada.get())
-        ausencias = int(entry_ausencias.get())
+
+        
+
         mes = MESES.index(combo_mes.get()) + 1
         año = 2025
         servicio = combo_servicio.get()
+
+        ausencias_validas = filtrar_ausencias_validas(servicio, año, mes)
+        ausencias = len(ausencias_validas)
 
         dias_laborales = obtener_dias_laborales(servicio, año, mes)
         if servicio in ["Supermercado", "Cuadrilla CA Cristina", "Predio Nuccetelli", "Cuadrilla CA Diana", "Hospital", "Cuadrilla CA Gustavo"]:
@@ -170,9 +249,10 @@ combo_jornada.grid(row=3, column=1)
 combo_jornada.bind("<<ComboboxSelected>>", lambda e: actualizar_francos())
 
 tk.Label(main_frame, text="Ausencias (días):", bg=PANEL_COLOR, font=FONT_BOLD).grid(row=4, column=0, sticky="w", pady=10)
-entry_ausencias = tk.Entry(main_frame, font=FONT, bd=2, relief="groove", width=20)
-entry_ausencias.insert(0, "0")
-entry_ausencias.grid(row=4, column=1)
+btn_ausencias = tk.Button(main_frame, text="Seleccionar fechas", command=abrir_calendario_ausencias,
+                          bg="#cccccc", font=FONT, relief="flat")
+btn_ausencias.grid(row=4, column=1)
+
 
 tk.Label(main_frame, text="Mes:", bg=PANEL_COLOR, font=FONT_BOLD).grid(row=5, column=0, sticky="w", pady=10)
 combo_mes = ttk.Combobox(main_frame, values=MESES, state="readonly", font=FONT)
