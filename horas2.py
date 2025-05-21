@@ -6,9 +6,6 @@ from tkcalendar import DateEntry
 from PIL import Image, ImageTk
 from tkinter import Toplevel
 from datetime import date, timedelta
-from tkinter import font  # Para usar una fuente personalizada
-
-
 
 #Inicializo novedades y ausencias
 ausencias_novedades = []
@@ -47,9 +44,6 @@ def abrir_calendario_ausencias():
     ventana.title("Seleccionar fechas de ausencias")
     ventana.configure(bg="white")
     ventana.resizable(False, False)
-
-
-
 
     # Centrado
     ancho_ventana = 370
@@ -115,7 +109,7 @@ FERIADOS_COLES_2025 = [
 
 FERIADOS_SUPER_2025 = [
     date(2025, 1, 1), date(2025, 3, 3), date(2025, 3, 4), date(2025, 3, 24),
-    date(2025, 4, 2), date(2025, 4, 18), date(2025, 5, 1), date(2025, 6, 20), date(2025, 7, 9),
+    date(2025, 5, 1), date(2025, 6, 20), date(2025, 7, 9),
     date(2025, 12, 8), date(2025, 12, 25)
 ]
 
@@ -196,8 +190,6 @@ def calcular():
     try:
         horas_trabajadas = float(entry_horas.get())
         jornada_semanal = int(combo_jornada.get())
-
-        
 
         mes = MESES.index(combo_mes.get()) + 1
         año = 2025
