@@ -173,7 +173,7 @@ def obtener_dias_laborales(servicio, año, mes):
     for dia in cal.itermonthdates(año, mes):
         if dia.month != mes:
             continue
-        if servicio in ["Supermercado", "Hospital", "Cuadrilla CA Cristina", "Predio Nuccetelli", "Cuadrilla CA Diana", "Cuadrilla CA Gustavo"] and dia not in FERIADOS_SUPER_2025:
+        if servicio in ["Supermercado", "Hospital", "Cuadrilla CA Cristina", "Predio Nuccetelli", "Cuadrilla CA Diana", "Cuadrilla CA Gustavo", "Vilaut"] and dia not in FERIADOS_SUPER_2025:
             dias_laborales.append(dia)
         elif servicio in ["Colegio", "Cuadrilla CA Dani F", "Cuadrilla EV Dani F", "Cuadrilla CA Felipe", "Cuadrilla CA Ricardo", "Puerto del águila"]:
             if dia.weekday() < 5 and dia not in FERIADOS_COLES_2025:
@@ -215,10 +215,30 @@ def calcular():
                     horas_teoricas += 4
                 else:
                     horas_teoricas += 8
+            elif servicio == "Lunes a Sábado" and jornada_semanal == 34:
+                if dia.weekday() == 5:  # Sábado
+                    horas_teoricas += 4
+                else:
+                    horas_teoricas += 6
+            elif servicio == "Lunes a Sábado" and jornada_semanal == 24:
+                if dia.weekday() == 5:  # Sábado
+                    horas_teoricas += 4
+                else:
+                    horas_teoricas += 4
+            elif servicio == "Vilaut":
+                    horas_teoricas += jornada_semanal / 7
+
             else:
                 # Determinar horas diarias para otros servicios
                 if servicio in ["Supermercado"]:
-                    horas_diarias = 8
+                    
+                    if jornada_semanal in [40, 44]:
+                        horas_diarias = 8
+                    elif jornada_semanal == 30:
+                        horas_diarias = 6
+                    else:
+                        horas_diarias = 4
+                    
                 elif servicio in ["Hospital", "Cuadrilla CA Cristina", "Predio Nuccetelli", "Cuadrilla CA Diana", "Cuadrilla CA Gustavo"]:
                     horas_diarias = 8 if jornada_semanal in [40, 44] else 6 if jornada_semanal == 30 else 4
                 elif servicio in [ "Cuadrilla CA Natalia"]:
@@ -269,14 +289,14 @@ combo_servicio = ttk.Combobox(main_frame, values=[
     "Supermercado", "Colegio", "Hospital", "Lunes a Sábado",
     "Cuadrilla CA Dani F", "Cuadrilla EV Dani F", "Cuadrilla CA Cristina", "Predio Nuccetelli",
     "Cuadrilla CA Felipe", "Cuadrilla CA Ricardo", "Cuadrilla CA Diana", "Cuadrilla EV Diana",
-    "Cuadrilla CA Natalia", "Cuadrilla CA Gustavo", "Puerto del águila", "FADEA"
+    "Cuadrilla CA Natalia", "Cuadrilla CA Gustavo", "Puerto del águila", "FADEA", "Vilaut"
 ], state="readonly", font=FONT_BOLD)
 combo_servicio.current(0)
 combo_servicio.grid(row=2, column=1)
 combo_servicio.bind("<<ComboboxSelected>>", lambda e: actualizar_francos())
 
 tk.Label(main_frame, text="Jornada semanal (hs):", bg=PANEL_COLOR, font=FONT_BOLD).grid(row=3, column=0, sticky="w", pady=10)
-combo_jornada = ttk.Combobox(main_frame, values=[20, 24, 30, 40, 42, 44], state="readonly", font=FONT)
+combo_jornada = ttk.Combobox(main_frame, values=[20, 24, 30, 34, 36, 40, 42, 44], state="readonly", font=FONT)
 combo_jornada.current(1)
 combo_jornada.grid(row=3, column=1)
 combo_jornada.bind("<<ComboboxSelected>>", lambda e: actualizar_francos())
