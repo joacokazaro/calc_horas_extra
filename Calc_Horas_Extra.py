@@ -173,7 +173,9 @@ def obtener_dias_laborales(servicio, año, mes):
     for dia in cal.itermonthdates(año, mes):
         if dia.month != mes:
             continue
-        if servicio in ["Supermercado", "Hospital", "Cuadrilla CA Cristina", "Predio Nuccetelli", "Cuadrilla CA Diana", "Cuadrilla CA Gustavo", "Vilaut"] and dia not in FERIADOS_SUPER_2025:
+        if servicio in ["Supermercado", "Cuadrilla CA Cristina", "Predio Nuccetelli", "Cuadrilla CA Diana", "Cuadrilla CA Gustavo", "Vilaut"] and dia not in FERIADOS_SUPER_2025:
+            dias_laborales.append(dia)
+        elif servicio in ["Hospital"] and dia not in FERIADOS_COLES_2025:
             dias_laborales.append(dia)
         elif servicio in ["Colegio", "Cuadrilla CA Dani F", "Cuadrilla EV Dani F", "Cuadrilla CA Felipe", "Cuadrilla CA Ricardo", "Puerto del águila"]:
             if dia.weekday() < 5 and dia not in FERIADOS_COLES_2025:
